@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'; base-uri 'none'; form-action 'none'">
+<title>EduLeaf | Admin Console</title>
+
+<style>
+:root {
+  color-scheme: dark;
+  --bg: #0c0d0f;
+  --panel: #15171b;
+  --gold: #d5b46b;
+  --text: #f4f4f5;
+  --muted: #92959f;
+  --border: #292b31;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, sans-serif;
+}
+header {
+  padding: 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.brand {
+  color: var(--gold);
+  font-size: 24px;
+  font-weight: 750;
+}
+small, .muted { color: var(--muted); }
+main {
+  max-width: 1000px;
+  margin: auto;
+  padding: 20px;
+}
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 22px;
+}
+.login {
+  max-width: 420px;
+  margin: 12vh auto 0;
+}
+h1, h2, h3 { margin-top: 0; }
+input, button {
+  font: inherit;
+  border-radius: 10px;
+  padding: 12px;
+}
+input {
+  width: 100%;
+  background: #0e1013;
+  border: 1px solid var(--border);
+  color: var(--text);
+  margin: 12px 0;
+}
+button {
+  background: var(--gold);
+  color: #15120b;
+  border: 0;
+  font-weight: 650;
+  cursor: pointer;
+}
+button:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+.secondary {
+  background: transparent;
+  color: var(--gold);
+  border: 1px solid var(--border);
+}
+.full { width: 100%; }
+.stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin: 20px 0;
+}
+.number {
+  display: block;
+  font-size: 32px;
+  color: var(--gold);
+  margin-top: 8px;
+}
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.submission {
+  margin: 12px 0;
+  overflow-wrap: anywhere;
+}
+.submission p {
+  font-size: 14px;
+  line-height: 1.6;
+}
+.status {
+  display: inline-block;
+  padding: 5px 10px;
+  border-radius: 20px;
+  background: #302719;
+  color: var(--gold);
+  font-size: 12px;
+}
+.message {
+  color: var(--gold);
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+footer {
+  text-align: center;
+  color: var(--muted);
+  font-size: 12px;
+  padding: 30px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div>
+    <div class="brand">EduLeaf</div>
+    <small>Administration Console</small>
+  </div>
+  <button id="logout" class="secondary" hidden>
+    Logout
+  </button>
+</header>
+
+<main>
+
+<section id="login" class="panel login">
+  <h2>Admin Access</h2>
+  <p class="muted">
+    Sign in to manage EduLeaf submissions.
+  </p>
+
+  <form id="loginForm">
+    <label for="password">Admin secret</label>
+    <input
+      id="password"
+      type="password"
+      placeholder="Enter admin secret"
+      autocomplete="current-password"
+      required
+    >
+    <button id="loginButton" class="full">
+      Sign In
+    </button>
+  </form>
+
+  <p id="loginMessage" class="message" role="status"></p>
+</section>
+
+<section id="dashboard" hidden>
+
+  <h2>Dashboard</h2>
+  <p class="muted">Manage community contributions.</p>
+
+  <div class="stats">
+    <div class="panel">
+      <small>Total submissions</small>
+      <strong id="total" class="number">0</strong>
+    </div>
+
+    <div class="panel">
+      <small>Pending review</small>
+      <strong id="pending" class="number">0</strong>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <input
+      id="search"
+      type="search"
+      placeholder="Search submissions..."
+      aria-label="Search submissions"
+    >
+    <button id="refresh" class="secondary">
+      Refresh
+    </button>
+  </div>
+
+  <p id="dashboardMessage" class="message" role="status"></p>
+  <div id="submissions"></div>
+
+</section>
+
+</main>
+
+<footer>
+  EduLeaf Administration · Version 1.0<br>
+  Developed by Ayan Altaf Mir
+</footer>
+
+<script>
+"use strict";
+
+const $ = id => document.getElementById(id);
+
+let secret = "";
+let submissions = [];
+let session = 0;
+
+async function api(action, id) {
+  const url = new URL("/api/admin", location.origin);
+  url.searchParams.set("action", action);
+
+  if (id !== undefined) {
+    url.searchParams.set("id", String(id));
+  }
+
+  const response = await fetch(url, {
+    method: "GET",
+    headers: {
+      Authorization: "Bearer " + secret
+    },
+    cache: "no-store",
+    redirect: "error",
+    credentials: "omit"
+  });
+
+  if (response.status === 401 ||
+      response.status === 403) {
+    throw new Error("Access denied. Check your admin secret.");
+  }
+
+  if (!response.ok) {
+    throw new Error("Request failed: HTTP " + response.status);
+  }
+
+  return response;
+}
+
+async function loadSubmissions() {
+  const currentSession = session;
+  const response = await api("list");
+  const data = await response.json();
+
+  if (currentSession !== session) return false;
+
+  if (!data.ok || !Array.isArray(data.submissions)) {
+    throw new Error("Invalid server response.");
+  }
+
+  submissions = data.submissions;
+
+  $("total").textContent = submissions.length;
+
+  $("pending").textContent = submissions.filter(
+    item => item.status === "pending"
+  ).length;
+
+  render();
+  return true;
+}
+
+function element(tag, text, className) {
+  const node = document.createElement(tag);
+  node.textContent = text;
+
+  if (className) {
+    node.className = className;
+  }
+
+  return node;
+}
+
+function render() {
+  const container = $("submissions");
+  container.replaceChildren();
+
+  const query = $("search").value.toLowerCase().trim();
+
+  const filtered = submissions.filter(item =>
+    [
+      item.subject,
+      item.batch,
+      item.semester,
+      item.category,
+      item.file_name,
+      item.contributor,
+      item.material_type,
+      item.status
+    ].some(value =>
+      String(value ?? "").toLowerCase().includes(query)
+    )
+  );
+
+  if (!filtered.length) {
+    container.append(
+      element("p", "No submissions found.", "muted")
+    );
+    return;
+  }
+
+  for (const item of filtered) {
+    const card = element("article", "", "panel submission");
+
+    card.append(
+      element("span", String(item.status || "Unknown"), "status"),
+      element("h3", item.subject || "Untitled subject"),
+      element("p",
+        "Batch: " + item.batch +
+        " | Semester: " + item.semester +
+        " | " + item.category
+      ),
+      element("p", "Type: " + item.material_type),
+      element("p", "File: " + item.file_name),
+      element("p", "Contributor: " + (item.contributor || "Anonymous")),
+      element("p", "Details: " + (item.description || "None")),
+      element("p", "Submission ID: " + item.id, "muted")
+    );
+
+    const download = element("button", "Download & Review");
+
+    download.addEventListener("click", async () => {
+      download.disabled = true;
+      download.textContent = "Downloading...";
+      const currentSession = session;
+
+      try {
+        const response = await api("download", item.id);
+        const blob = await response.blob();
+
+        if (currentSession !== session) return;
+
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+
+        link.href = url;
+        link.download = String(
+          item.file_name || "submission"
+        ).replace(/[\/\\\x00-\x1f]/g, "_");
+
+        document.body.append(link);
+        link.click();
+        link.remove();
+
+        setTimeout(() => URL.revokeObjectURL(url), 10000);
+
+        $("dashboardMessage").textContent =
+          "Download completed.";
+
+      } catch (error) {
+        if (currentSession === session) {
+          $("dashboardMessage").textContent = error.message;
+        }
+      } finally {
+        download.disabled = false;
+        download.textContent = "Download & Review";
+      }
+    });
+
+    card.append(download);
+    container.append(card);
+  }
+}
+
+$("loginForm").addEventListener("submit", async event => {
+  event.preventDefault();
+
+  secret = $("password").value;
+  $("password").value = "";
+  $("loginButton").disabled = true;
+  $("loginMessage").textContent = "Verifying...";
+
+  try {
+    if (!await loadSubmissions()) return;
+
+    $("login").hidden = true;
+    $("dashboard").hidden = false;
+    $("logout").hidden = false;
+    $("loginMessage").textContent = "";
+
+  } catch (error) {
+    secret = "";
+    $("loginMessage").textContent = error.message;
+
+  } finally {
+    $("loginButton").disabled = false;
+  }
+});
+
+$("search").addEventListener("input", render);
+
+$("refresh").addEventListener("click", async () => {
+  $("refresh").disabled = true;
+  $("dashboardMessage").textContent = "Refreshing...";
+  const currentSession = session;
+
+  try {
+    if (await loadSubmissions()) {
+      $("dashboardMessage").textContent = "Submissions updated.";
+    }
+  } catch (error) {
+    if (currentSession === session) {
+      $("dashboardMessage").textContent = error.message;
+    }
+  } finally {
+    $("refresh").disabled = false;
+  }
+});
+
+function logout() {
+  session++;
+  secret = "";
+  submissions = [];
+  $("password").value = "";
+  $("search").value = "";
+  $("submissions").replaceChildren();
+  $("total").textContent = "0";
+  $("pending").textContent = "0";
+  $("dashboardMessage").textContent = "";
+  $("dashboard").hidden = true;
+  $("logout").hidden = true;
+  $("login").hidden = false;
+}
+
+$("logout").addEventListener("click", logout);
+window.addEventListener("pagehide", logout);
+</script>
+
+</body>
+  </html>
