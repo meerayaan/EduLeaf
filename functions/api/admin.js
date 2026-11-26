@@ -18,15 +18,11 @@ export async function onRequest({ request, env }) {
     return reply({ error: "Unauthorized." }, 401);
   }
 
-  if (request.method !== "GET") {
-    return reply({ error: "Method not allowed." }, 405);
-  }
-
   try {
     const url = new URL(request.url);
     const action = url.searchParams.get("action") || "list";
 
-    if (action === "list") {
+    if (action === "list" && request.method === "GET") {
       const { results } = await env.DB.prepare(
         "SELECT * FROM submissions ORDER BY id DESC LIMIT 100"
       ).all();
@@ -37,7 +33,7 @@ export async function onRequest({ request, env }) {
       });
     }
 
-    if (action === "download") {
+    if (action === "download" && request.method === "GET") {
       const id = Number(url.searchParams.get("id"));
 
       if (!Number.isSafeInteger(id) || id < 1) {
@@ -70,9 +66,42 @@ export async function onRequest({ request, env }) {
       });
     }
 
-    return reply({ error: "Invalid action." }, 400);
+    if (action === "approve" || action === "reject") {
+      if (request.method !== "POST") {
+        return reply({ error: "Method not allowed." }, 405);
+      }
+
+      const id = Number(url.searchParams.get("id"));
+
+      if (!Number.isSafeInteger(id) || id < 1) {
+        return reply({ error: "Invalid ID." }, 400);
+      }
+
+      const status = action === "approve"
+        ? "approved"
+        : "rejected";
+
+      const result = await env.DB.prepare(
+        "UPDATE submissions SET status = ? WHERE id = ? AND status = 'pending'"
+      ).bind(status, id).run();
+
+      if (result.meta.changes !== 1) {
+        return reply({
+          error: "Submission not found or already reviewed."
+        }, 409);
+      }
+
+      return reply({
+        ok: true,
+        id,
+        status,
+        message: `Submission ${status}.`
+      });
+    }
+
+    return reply({ error: "Invalid action or method." }, 400);
 
   } catch {
     return reply({ error: "Admin request failed." }, 500);
   }
-    }
+}
