@@ -8,7 +8,12 @@ export async function onRequestPost({ request, env }) {
   if (!env.DB || !env.FILES) {
     return reply({ error: "Storage not configured." }, 503);
   }
-
+if (
+  !env.UPLOAD_TEST_KEY ||
+  request.headers.get("X-Upload-Test-Key") !== env.UPLOAD_TEST_KEY
+) {
+  return reply({ error: "Unauthorized request." }, 403);
+}
   if (env.UPLOADS_ENABLED !== "true") {
     return reply({ error: "Uploads are temporarily disabled." }, 503);
   }
