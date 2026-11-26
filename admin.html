@@ -128,6 +128,29 @@ footer {
   font-size: 12px;
   padding: 30px;
 }
+
+.review-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+.approve {
+  background: #163b28;
+  color: #86efac;
+}
+.reject {
+  background: #421e24;
+  color: #fca5a5;
+}
+.status.approved {
+  background: #163b28;
+  color: #86efac;
+}
+.status.rejected {
+  background: #421e24;
+  color: #fca5a5;
+}
 </style>
 </head>
 
@@ -218,7 +241,7 @@ let secret = "";
 let submissions = [];
 let session = 0;
 
-async function api(action, id) {
+async function api(action, id, method = "GET") {
   const url = new URL("/api/admin", location.origin);
   url.searchParams.set("action", action);
 
@@ -227,7 +250,7 @@ async function api(action, id) {
   }
 
   const response = await fetch(url, {
-    method: "GET",
+    method: method,
     headers: {
       Authorization: "Bearer " + secret
     },
@@ -314,7 +337,7 @@ function render() {
     const card = element("article", "", "panel submission");
 
     card.append(
-      element("span", String(item.status || "Unknown"), "status"),
+      element("span", String(item.status || "Unknown"), "status " + item.status),
       element("h3", item.subject || "Untitled subject"),
       element("p",
         "Batch: " + item.batch +
@@ -368,7 +391,55 @@ function render() {
       }
     });
 
+
     card.append(download);
+
+    if (item.status === "pending") {
+      const actions = element("div", "", "review-actions");
+      const approve = element("button", "Approve", "approve");
+      const reject = element("button", "Reject", "reject");
+
+      async function review(action) {
+        if (!confirm("Confirm " + action +
+          " for submission #" + item.id + "?")) return;
+
+        const currentSession = session;
+        approve.disabled = true;
+        reject.disabled = true;
+
+        try {
+          const response = await api(action, item.id, "POST");
+          const data = await response.json();
+
+          if (currentSession !== session) return;
+          if (!data.ok) throw new Error("Review failed.");
+
+          item.status = data.status;
+          render();
+
+          await loadSubmissions();
+
+          if (currentSession === session) {
+            $("dashboardMessage").textContent =
+              "Submission " + data.status + " successfully.";
+          }
+        } catch (error) {
+          if (currentSession === session) {
+            $("dashboardMessage").textContent = error.message;
+          }
+        } finally {
+          approve.disabled = false;
+          reject.disabled = false;
+        }
+      }
+
+      approve.addEventListener("click", () => review("approve"));
+      reject.addEventListener("click", () => review("reject"));
+
+      actions.append(approve, reject);
+      card.append(actions);
+    }
+
     container.append(card);
   }
 }
