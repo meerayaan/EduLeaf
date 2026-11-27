@@ -26,7 +26,39 @@ const group=x=>({MAJOR:'Major',MINOR:'Minor',MULTIDISCIPLINARY:'MDC',ABILITY:'AE
 const sem=x=>x.semester.startsWith('Ist')?'1':x.semester.match(/^\d+/)?.[0];
 const batches=['2026','2025','2024'];
 const navTrail=[{hash:location.hash||'#home',y:0}];let restoreY=0;
-function setupUpload(id){const f=document.getElementById('community');const old=f.elements.subject;const sel=document.createElement('select');sel.name='subject';sel.required=true;old.replaceWith(sel);const refresh=()=>{const matches=data.filter(x=>x.batch===f.elements.batch.value&&sem(x)===f.elements.semester.value&&group(x)===f.elements.category.value);sel.replaceChildren(new Option('Select subject',''));for(const x of matches){const opt=new Option(pretty(x.name)+' — '+x.code,x.name+' | '+x.code);sel.add(opt);if(data[Number(id)]===x)sel.value=opt.value;} };for(const k of ['batch','semester','category'])f.elements[k].addEventListener('change',refresh);refresh();const submit=f.querySelector('button[type=submit]');submit.textContent='Submit for review';submit.insertAdjacentHTML('beforebegin','<label>Contributor name (optional)<input name="contributor" maxlength="100"></label><label>Choose file (max 10 MB)<input name="file" type="file" accept=".pdf,.jpg,.jpeg,.png,.docx" required></label><p role="status" id="uploadStatus"></p>');f.querySelector('input[type=checkbox]').name='permission';f.onsubmit=async e=>{e.preventDefault();const status=f.querySelector('#uploadStatus');const file=f.elements.file.files[0];if(!file||file.size>10*1024*1024){status.textContent='Choose a file up to 10 MB.';return;}submit.disabled=true;status.textContent='Uploading…';try{const r=await fetch('/api/upload',{method:'POST',body:new FormData(f)});const result=await r.json();if(!r.ok||!result.ok)throw Error(result.error||'Upload failed');status.textContent='Submitted for review. Reference: '+result.id;f.reset();refresh();}catch(e){status.textContent='Submission failed: '+e.message;}finally{submit.disabled=false;}};}
+function setupUpload(id){const f=document.getElementById('community');const old=f.elements.subject;const sel=document.createElement('select');sel.name='subject';sel.required=true;old.replaceWith(sel);const refresh=()=>{const matches=data.filter(x=>x.batch===f.elements.batch.value&&sem(x)===f.elements.semester.value&&group(x)===f.elements.category.value);sel.replaceChildren(new Option('Select subject',''));for(const x of matches){const opt=new Option(pretty(x.name)+' — '+x.code,x.name+' | '+x.code);sel.add(opt);if(data[Number(id)]===x)sel.value=opt.value;} };for(const k of ['batch','semester','category'])f.elements[k].addEventListener('change',refresh);refresh();const submit=f.querySelector('button[type=submit]');submit.textContent='Submit for review';submit.insertAdjacentHTML('beforebegin','<label>Contributor name (optional)<input name="contributor" maxlength="100"></label><label>Choose file (max 10 MB)<input name="file" type="file" accept=".pdf,.jpg,.jpeg,.png,.docx" required></label><p role="status" id="uploadStatus"></p>');f.querySelector('input[type=checkbox]').name='permission';
+const captcha=document.createElement('div');
+submit.before(captcha);
+
+let widgetId;
+
+const renderCaptcha=()=>{
+  if(!captcha.isConnected)return;
+  widgetId=window.turnstile.render(captcha,{
+    sitekey:'0x4AAAAAAGVZFY4azrHIcF70',
+    action:'upload',
+    theme:'auto'
+  });
+};
+
+if(window.turnstile){
+  renderCaptcha();
+}else{
+  const script=document.createElement('script');
+  script.src='https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+  script.async=true;
+  script.onload=renderCaptcha;
+  script.onerror=()=>{
+    if(captcha.isConnected)
+      captcha.textContent='Security verification unavailable. Please refresh.';
+  };
+  document.head.append(script);
+}
+f.onsubmit=async e=>{e.preventDefault();const status=f.querySelector('#uploadStatus');const file=f.elements.file.files[0];if(!file||file.size>10*1024*1024){status.textContent='Choose a file up to 10 MB.';return;}submit.disabled=true;status.textContent='Uploading…';try{const r=await fetch('/api/upload',{method:'POST',body:new FormData(f)});const result=await r.json();if(!r.ok||!result.ok)throw Error(result.error||'Upload failed');status.textContent='Submitted for review. Reference: '+result.id;f.reset();refresh();}catch(e){status.textContent='Submission failed: '+e.message;}finally{
+  submit.disabled=false;
+  if(window.turnstile && widgetId!==undefined && captcha.isConnected)
+    window.turnstile.reset(widgetId);
+}};}
 function route(){const token=++generation;let [page,b,n,c,id,mode]=location.hash.slice(1).split('/');if(!batches.includes(b))b='2026';if(!/^[1-8]$/.test(n||''))n='1';let html='';const base='#semester/'+b+'/'+n;const resource=page==='notes'||page==='pyq'?page:page==='category'&&['notes','pyq'].includes(id)?id:page==='subject'&&['notes','pyq'].includes(mode)?mode:'syllabus';const cat='#category/'+b+'/'+n+'/'+c+(resource==='syllabus'?'':'/'+resource);const bc=ku+' / <a href="#ku">Batch '+b+'</a> / <a href="'+base+'">Semester '+n+'</a>';const rows=data.filter(x=>x.batch===b&&sem(x)===n);const list=rows.filter(x=>group(x)===c);const loading=!ready?'<div class="notice '+(error?'':'loading')+'">'+(error?'Could not load course data. Refresh to retry.':'Loading syllabus catalogue…')+'</div>':'';
 if(page==='saved'||page==='recent'||page==='search'){html=crumb(page==='saved'?'Saved subjects':page==='recent'?'Recently viewed':'Search syllabus')+'<h1>'+(page==='saved'?'Saved subjects':page==='recent'?'Recently viewed':'Search all syllabuses')+'</h1>'+loading+'<label for="search">Search by name or code</label><input id="search" type="search" placeholder="Search subjects"><p id="count" aria-live="polite"></p><div class="grid" id="results"></div>'}
 else if(page==='developer'||page==='contact'){html=crumb('Contact')+'<h1>'+(page==='developer'?'About Developer':'Contact Us')+'</h1><div class="developer"><small>FOUNDER & DEVELOPER</small><strong>Ayan Altaf Mir</strong><span>Version 1.0 · In Development</span></div>'+btn('Send an email',mail('EduLeaf feedback'))+' '+btn('GitHub repository ↗',repo,true)}
