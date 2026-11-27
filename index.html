@@ -45,7 +45,139 @@ nav.menu{top:12px;bottom:12px;right:12px;width:min(350px,calc(100vw - 24px));max
   font-weight:700;
   font-variant-numeric:tabular-nums;
 }
-</style><meta name="description" content="Explore Kashmir University undergraduate syllabus by batch, semester and course code on EduLeaf."><link rel="canonical" href="https://eduleaf.pages.dev/"><meta property="og:title" content="EduLeaf | Your Academic Companion"><meta property="og:description" content="Kashmir University syllabus library"><meta property="og:url" content="https://eduleaf.pages.dev/"><link rel="manifest" href="/manifest.webmanifest"><link rel="icon" href="/icon.svg"><link rel="apple-touch-icon" href="/icon-192.png"><meta property="og:image" content="https://eduleaf.pages.dev/icon-512.png"><meta property="og:type" content="website"><script>try{if(localStorage.getItem("eduleaf-theme")==="light")document.documentElement.dataset.theme="light"}catch{}</script></head><body><a class="skip" href="#content">Skip to content</a><header><nav class="wrap"><a class="brand" href="#home"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#25945c" d="M24 29C9 26 13 8 40 4c0 17-5 25-16 25Z"/><path d="M23 31 34 13" stroke="#fff" stroke-width="2" stroke-linecap="round"/><path fill="#146b48" d="M4 27q12-2 20 8 8-10 20-8v12q-12-1-20 6Q16 38 4 39Z"/></svg>EduLeaf</a><div class="navlinks"><a href="#ug">UG Education</a><a href="#about">About</a><button class="iconbtn" id="theme" aria-label="Switch theme">◐</button></div><button class="iconbtn" id="bell" aria-label="Notifications" aria-expanded="false"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg><span id="unread" hidden></span></button><button class="iconbtn" id="menuToggle" aria-label="Open menu" aria-expanded="false">⋮</button></nav></header><div id="menuShade" hidden></div><nav id="menu" class="menu" hidden aria-label="Main menu"></nav><section id="notifications" hidden aria-label="Notifications"><div class="noticehead"><strong>Notifications</strong><button class="iconbtn" id="markRead">Mark all read</button><button class="iconbtn" id="closeNotices" aria-label="Close notifications">×</button></div><div id="noticeList" aria-live="polite"></div></section><div id="toast" class="toast" role="status" hidden></div><main class="wrap" id="content" tabindex="-1"></main><footer><div class="wrap footer-inner"><div class="footer-brand royal-brand"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#25945c" d="M24 29C9 26 13 8 40 4c0 17-5 25-16 25Z"/><path d="M23 31 34 13" stroke="#fff" stroke-width="2" stroke-linecap="round"/><path fill="#146b48" d="M4 27q12-2 20 8 8-10 20-8v12q-12-1-20 6Q16 38 4 39Z"/></svg><div class="footer-brand-copy"><strong>EduLeaf</strong><small>Learn. Grow. Succeed.</small></div><span class="status">V1.0</span></div><div class="footer-links"><a href="#home"><svg class="footer-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg><span>Home</span></a><a href="#about"><svg class="footer-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5m0-8h.01"/></svg><span>About</span></a><a href="#contact"><svg class="footer-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg><span>Contact</span></a></div><div class="footer-credit">&lt;/&gt; · Designed &amp; developed by <strong>Ayan Altaf Mir</strong> <a href="https://github.com/meerayaan/EduLeaf" target="_blank" rel="noopener"><svg class="footer-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-4 1-4-2-6-2m12 5v-4a3 3 0 0 0-1-2c4-.5 6-2 6-6a5 5 0 0 0-1.4-3.5A5 5 0 0 0 18.5 3S17 3 15 4.5a13 13 0 0 0-6 0C7 3 5.5 3 5.5 3a5 5 0 0 0-.1 3.5A5 5 0 0 0 4 10c0 4 2 5.5 6 6a3 3 0 0 0-1 2v4"/></svg><span>GitHub</span></a> <a href="mailto:ayanaltafmir@gmail.com"><svg class="footer-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg><span>Email</span></a></div><p class="footer-disclaimer">Independent educational platform. Not affiliated with any university or board.</p><div class="footer-bottom">© <span id="year"></span> EduLeaf · V1.0 · In Development</div></div></footer>
+
+/* EduLeaf approved premium UI update */
+
+:root {
+  --button-shade:linear-gradient(145deg,#fffdf7,#eee3ca);
+  --button-rich:linear-gradient(145deg,#f7eacb,#e6d2a0);
+  --button-shadow:0 3px 7px #80601b14;
+}
+
+html[data-theme=dark] {
+  --button-shade:linear-gradient(145deg,#302a20,#181715);
+  --button-rich:linear-gradient(145deg,#453820,#242018);
+  --button-shadow:0 3px 7px #0003;
+}
+
+.iconbtn,
+.btn.outline,
+.footer-links a,
+nav.menu button {
+  background:var(--button-shade);
+  color:var(--green);
+  border:1px solid var(--line);
+  box-shadow:var(--button-shadow),
+    inset 0 1px 0 #ffffff09;
+  transition:transform .18s ease,
+    box-shadow .18s ease,
+    background .2s ease;
+}
+
+.btn.outline[href="#ku"],
+.hero .btn {
+  background:var(--button-rich);
+  color:var(--green);
+  border:1px solid var(--line);
+  box-shadow:var(--button-shadow);
+}
+
+.iconbtn:active,
+.btn:active,
+.footer-links a:active,
+nav.menu button:active {
+  transform:scale(.96);
+  box-shadow:inset 0 2px 5px #0002;
+}
+
+#menuToggle {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.hamburger-icon {
+  flex-shrink:0;
+}
+
+.hamburger-icon path {
+  transform-origin:12px 12px;
+  transition:transform .2s ease,opacity .2s ease;
+}
+
+#menuToggle[aria-expanded="true"] path:nth-child(1) {
+  transform:translateY(6px) rotate(45deg);
+}
+
+#menuToggle[aria-expanded="true"] path:nth-child(2) {
+  opacity:0;
+}
+
+#menuToggle[aria-expanded="true"] path:nth-child(3) {
+  transform:translateY(-6px) rotate(-45deg);
+}
+
+#closeNotices {
+  width:44px;
+  height:44px;
+  min-width:44px;
+  min-height:44px;
+  padding:0;
+  flex:0 0 44px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+}
+
+#markRead {
+  background:var(--button-shade);
+  color:var(--green);
+  box-shadow:var(--button-shadow);
+}
+
+footer {
+  background:transparent;
+  border:0;
+}
+
+.footer-inner {
+  background:linear-gradient(
+    145deg,var(--surface),
+    color-mix(in srgb,var(--surface) 90%,var(--soft))
+  );
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:16px;
+  box-sizing:border-box;
+}
+
+.royal-brand,
+.footer-credit {
+  border:0;
+  background:none;
+}
+
+.footer-credit {
+  color:var(--muted);
+  font-weight:500;
+  letter-spacing:.15px;
+}
+
+.footer-credit strong {
+  color:var(--green);
+  background:none;
+  font-weight:700;
+}
+
+@media(prefers-reduced-motion:reduce) {
+  .hamburger-icon path,
+  .iconbtn,
+  .btn,
+  .footer-links a {
+    transition:none;
+  }
+}
+</style><meta name="description" content="Explore Kashmir University undergraduate syllabus by batch, semester and course code on EduLeaf."><link rel="canonical" href="https://eduleaf.pages.dev/"><meta property="og:title" content="EduLeaf | Your Academic Companion"><meta property="og:description" content="Kashmir University syllabus library"><meta property="og:url" content="https://eduleaf.pages.dev/"><link rel="manifest" href="/manifest.webmanifest"><link rel="icon" href="/icon.svg"><link rel="apple-touch-icon" href="/icon-192.png"><meta property="og:image" content="https://eduleaf.pages.dev/icon-512.png"><meta property="og:type" content="website"><script>try{if(localStorage.getItem("eduleaf-theme")==="light")document.documentElement.dataset.theme="light"}catch{}</script></head><body><a class="skip" href="#content">Skip to content</a><header><nav class="wrap"><a class="brand" href="#home"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#25945c" d="M24 29C9 26 13 8 40 4c0 17-5 25-16 25Z"/><path d="M23 31 34 13" stroke="#fff" stroke-width="2" stroke-linecap="round"/><path fill="#146b48" d="M4 27q12-2 20 8 8-10 20-8v12q-12-1-20 6Q16 38 4 39Z"/></svg>EduLeaf</a><div class="navlinks"><a href="#ug">UG Education</a><a href="#about">About</a><button class="iconbtn" id="theme" aria-label="Switch theme">◐</button></div><button class="iconbtn" id="bell" aria-label="Notifications" aria-expanded="false"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg><span id="unread" hidden></span></button><button class="iconbtn" id="menuToggle" aria-label="Open menu" aria-expanded="false"><svg class="hamburger-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg></button></nav></header><div id="menuShade" hidden></div><nav id="menu" class="menu" hidden aria-label="Main menu"></nav><section id="notifications" hidden aria-label="Notifications"><div class="noticehead"><strong>Notifications</strong><button class="iconbtn" id="markRead">Mark all read</button><button class="iconbtn" id="closeNotices" aria-label="Close notifications"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div><div id="noticeList" aria-live="polite"></div></section><div id="toast" class="toast" role="status" hidden></div><main class="wrap" id="content" tabindex="-1"></main><footer><div class="wrap footer-inner"><div class="footer-brand royal-brand"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#25945c" d="M24 29C9 26 13 8 40 4c0 17-5 25-16 25Z"/><path d="M23 31 34 13" stroke="#fff" stroke-width="2" stroke-linecap="round"/><path fill="#146b48" d="M4 27q12-2 20 8 8-10 20-8v12q-12-1-20 6Q16 38 4 39Z"/></svg><div class="footer-brand-copy"><strong>EduLeaf</strong><small>Learn. Grow. Succeed.</small></div><span class="status">V1.0</span></div><div class="footer-links"><a href="#home"><svg class="footer-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg><span>Home</span></a><a href="#about"><svg class="footer-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5m0-8h.01"/></svg><span>About</span></a><a href="#contact"><svg class="footer-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg><span>Contact</span></a></div><div class="footer-credit">&lt;/&gt; · Designed &amp; developed by <strong>Ayan Altaf Mir</strong> <a href="https://github.com/meerayaan/EduLeaf" target="_blank" rel="noopener"><svg class="footer-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-4 1-4-2-6-2m12 5v-4a3 3 0 0 0-1-2c4-.5 6-2 6-6a5 5 0 0 0-1.4-3.5A5 5 0 0 0 18.5 3S17 3 15 4.5a13 13 0 0 0-6 0C7 3 5.5 3 5.5 3a5 5 0 0 0-.1 3.5A5 5 0 0 0 4 10c0 4 2 5.5 6 6a3 3 0 0 0-1 2v4"/></svg><span>GitHub</span></a> <a href="mailto:ayanaltafmir@gmail.com"><svg class="footer-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg><span>Email</span></a></div><p class="footer-disclaimer">Independent educational platform. Not affiliated with any university or board.</p><div class="footer-bottom">© <span id="year"></span> EduLeaf · V1.0 · In Development</div></div></footer>
 <script>
 'use strict';const portal='https://egov.uok.edu.in/eservices/syllabus/prelogin/course.aspx?coursetype=UGNEP';
 const main=document.getElementById('content');const btn=(label,url,external=false)=>`<a class="btn outline" href="${url}" ${external?'target="_blank" rel="noopener noreferrer"':''}>${label}</a>`;const card=(title,desc,action='',status='')=>`<article class="card">${status?`<span class="status">${status}</span>`:''}<h3>${title}</h3><p>${desc}</p>${action}</article>`;const grid=x=>`<div class="grid">${x}</div>`;const crumb=x=>`<div class="crumb"><a href="#home">Home</a> / ${x}</div>`;const ku='<a href="#ug">UG</a> / <a href="#ku">KU</a>';const categories=['Major','Minor','MDC','AEC','SEC','VAC'];let generation=0;
@@ -247,7 +379,25 @@ const animateCards=()=>main.querySelectorAll('.card').forEach((el,i)=>el.style.s
 if(page==='category'){const search=document.getElementById('search');const render=()=>{const q=search.value.trim().toLowerCase();const found=list.filter(x=>[x.name,x.code,x.category].join(' ').toLowerCase().includes(q));document.getElementById('count').textContent=found.length+' of '+list.length+' courses';document.getElementById('results').innerHTML=found.map(courseCard).join('')||'<p>No matching courses.</p>';animateCards()};search.oninput=render;render()}
 if(page==='subject'&&document.getElementById('pdf')){const x=data[Number(id)];document.getElementById('pdf').innerHTML=btn('Open official PDF ↗',esc(x.link),true)} }
 fetch('courses.json').then(r=>{if(!r.ok)throw Error();return r.json()}).then(v=>{if(!Array.isArray(v))throw Error();data=v;data.forEach((x,i)=>{indices.set(x,i);searchText.set(x,(x.name+' '+x.code+' '+x.batch+' '+x.semester).toLowerCase())});ready=true;route()}).catch(()=>{error=true;route()});
-const theme=document.getElementById('theme');function applyTheme(v){document.documentElement.dataset.theme=v;theme.textContent=v==='dark'?'☀':'◐';theme.setAttribute('aria-label',v==='dark'?'Switch to light mode':'Switch to dark mode')}let saved;try{saved=localStorage.getItem('eduleaf-theme')}catch(e){}applyTheme(saved==='light'?'light':'dark');theme.onclick=()=>{const v=document.documentElement.dataset.theme==='dark'?'light':'dark';applyTheme(v);try{localStorage.setItem('eduleaf-theme',v)}catch(e){}};document.getElementById('year').textContent=new Date().getFullYear();const menu=document.getElementById('menu'),toggle=document.getElementById('menuToggle');const icons={install:'M12 3v13m-5-5 5 5 5-5M4 17v4h16v-4',home:'M3 10l9-7 9 7v10H3z M9 20v-7h6v7',education:'M2 9l10-5 10 5-10 5z M6 11v6l6 3 6-3v-6',calendar:'M4 5h16v16H4z M4 10h16 M8 3v4 M16 3v4',search:'M15 15l6 6 M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0',bookmark:'M6 3h12v18l-6-4-6 4z',history:'M3 12a9 9 0 1 0 3-7 M3 3v6h6 M12 7v5l4 2',book:'M3 4h7l2 2 2-2h7v15h-7l-2 2-2-2H3z M12 6v15',upload:'M12 16V3 M7 8l5-5 5 5 M4 15v6h16v-6',flag:'M5 22V3h14l-3 5 3 5H5',share:'M12 16V3 M7 8l5-5 5 5 M4 12v9h16v-9',mail:'M3 5h18v14H3z M3 6l9 7 9-7',info:'M12 11v6 M12 7h.01 M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0',code:'M8 6l-6 6 6 6 M16 6l6 6-6 6 M14 3l-4 18',repo:'M4 4h16v16H4z M8 4v16 M12 8h5 M12 12h5',theme:'M12 3v2 M12 19v2 M3 12h2 M19 12h2 M16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0'};const mi=k=>'<svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="'+icons[k]+'"/></svg>';const groups=[['Explore',[['Home','#home','home'],['UG Education','#ug','education'],['My Semester','#my','calendar'],['Search Syllabus','#search','search'],['Saved Subjects','#saved','bookmark'],['Recently Viewed','#recent','history']]],['Community',[['Request Study Material','#request','book'],['Support by Uploading','#upload','upload'],['Report an Issue',mail('EduLeaf issue'),'flag'],['Share EduLeaf',null,'share','share'],['Install App',null,'install','installApp']]]];menu.innerHTML='<div class="menu-head"><span>EduLeaf</span><button id="menuClose" aria-label="Close menu">×</button></div><div class="menu-scroll">'+groups.map(([h,items])=>'<section class="menu-group"><small>'+h.toUpperCase()+'</small>'+items.map(([t,u,k,id])=>{const content=mi(k)+'<span>'+t+'</span><span class="menu-chevron" aria-hidden="true">›</span>';return u?'<a href="'+esc(u)+'">'+content+'</a>':'<button id="'+id+'">'+content+'</button>'}).join('')+'</section>').join('')+'</div><div class="menu-foot">EduLeaf · V1.0</div>';const shade=document.getElementById('menuShade');function closeMenu(){const wasOpen=!menu.hidden;menu.hidden=true;shade.hidden=true;document.body.classList.remove('menu-open');toggle.setAttribute('aria-expanded','false');if(wasOpen)toggle.focus({preventScroll:true})}toggle.setAttribute('aria-controls','menu');toggle.onclick=()=>{if(!menu.hidden){closeMenu();return}menu.hidden=false;shade.hidden=false;document.body.classList.add('menu-open');toggle.setAttribute('aria-expanded','true');document.getElementById('menuClose').focus()};document.getElementById('menuClose').onclick=closeMenu;document.addEventListener('click',e=>{if(!menu.contains(e.target)&&!toggle.contains(e.target))closeMenu();const b=e.target.closest('[data-save]');if(b){const x=data[Number(b.dataset.save)];if(!x)return;const k=key(x),has=savedKeys.includes(k);savedKeys=has?savedKeys.filter(v=>v!==k):[...savedKeys,k];const ok=write('edu-saved',savedKeys);b.textContent=b.classList.contains('bookmark')?(has?'☆':'★'):(has?'☆ Save subject':'★ Saved');b.setAttribute('aria-label',has?'Save subject':'Remove saved subject');b.setAttribute('aria-pressed',String(!has));toast(ok?(has?'Subject removed':'Subject saved'):'Browser storage unavailable');if(location.hash==='#saved')route()}});menu.addEventListener('click',e=>{if(e.target.closest('a'))closeMenu()});document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMenu()});document.getElementById('share').onclick=async()=>{try{if(navigator.share)await navigator.share({title:'EduLeaf',url:location.origin});else{await navigator.clipboard.writeText(location.origin);toast('Website link copied')}}catch{}};window.addEventListener('scroll',()=>{if(navTrail.length)navTrail[navTrail.length-1].y=window.scrollY},{passive:true});window.addEventListener('hashchange',()=>{closeMenu();navTrail.push({hash:location.hash||'#home',y:0});route()});route();
+const theme=document.getElementById('theme');function applyTheme(v){document.documentElement.dataset.theme=v;theme.textContent=v==='dark'?'☀':'◐';theme.setAttribute('aria-label',v==='dark'?'Switch to light mode':'Switch to dark mode')}let saved;try{saved=localStorage.getItem('eduleaf-theme')}catch(e){}applyTheme(saved==='light'?'light':'dark');theme.onclick=()=>{const v=document.documentElement.dataset.theme==='dark'?'light':'dark';applyTheme(v);try{localStorage.setItem('eduleaf-theme',v)}catch(e){}};document.getElementById('year').textContent=new Date().getFullYear();const menu=document.getElementById('menu'),toggle=document.getElementById('menuToggle');const icons={install:'M12 3v13m-5-5 5 5 5-5M4 17v4h16v-4',home:'M3 10l9-7 9 7v10H3z M9 20v-7h6v7',education:'M2 9l10-5 10 5-10 5z M6 11v6l6 3 6-3v-6',calendar:'M4 5h16v16H4z M4 10h16 M8 3v4 M16 3v4',search:'M15 15l6 6 M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0',bookmark:'M6 3h12v18l-6-4-6 4z',history:'M3 12a9 9 0 1 0 3-7 M3 3v6h6 M12 7v5l4 2',book:'M3 4h7l2 2 2-2h7v15h-7l-2 2-2-2H3z M12 6v15',upload:'M12 16V3 M7 8l5-5 5 5 M4 15v6h16v-6',flag:'M5 22V3h14l-3 5 3 5H5',share:'M12 16V3 M7 8l5-5 5 5 M4 12v9h16v-9',mail:'M3 5h18v14H3z M3 6l9 7 9-7',info:'M12 11v6 M12 7h.01 M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0',code:'M8 6l-6 6 6 6 M16 6l6 6-6 6 M14 3l-4 18',repo:'M4 4h16v16H4z M8 4v16 M12 8h5 M12 12h5',theme:'M12 3v2 M12 19v2 M3 12h2 M19 12h2 M16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0'};const mi=k=>'<svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="'+icons[k]+'"/></svg>';const groups=[['Explore',[['Home','#home','home'],['UG Education','#ug','education'],['My Semester','#my','calendar'],['Search Syllabus','#search','search'],['Saved Subjects','#saved','bookmark'],['Recently Viewed','#recent','history']]],['Community',[['Request Study Material','#request','book'],['Support by Uploading','#upload','upload'],['Report an Issue',mail('EduLeaf issue'),'flag'],['Share EduLeaf',null,'share','share'],['Install App',null,'install','installApp']]]];menu.innerHTML='<div class="menu-head"><span>EduLeaf</span><button id="menuClose" aria-label="Close menu">×</button></div><div class="menu-scroll">'+groups.map(([h,items])=>'<section class="menu-group"><small>'+h.toUpperCase()+'</small>'+items.map(([t,u,k,id])=>{const content=mi(k)+'<span>'+t+'</span><span class="menu-chevron" aria-hidden="true">›</span>';return u?'<a href="'+esc(u)+'">'+content+'</a>':'<button id="'+id+'">'+content+'</button>'}).join('')+'</section>').join('')+'</div><div class="menu-foot">EduLeaf · V1.0</div>';const shade=document.getElementById('menuShade');function closeMenu(){const wasOpen=!menu.hidden;menu.hidden=true;shade.hidden=true;document.body.classList.remove('menu-open');toggle.setAttribute('aria-expanded','false');if(wasOpen)toggle.focus({preventScroll:true})}toggle.setAttribute('aria-controls','menu');toggle.onclick=()=>{if(!menu.hidden){closeMenu();return}menu.hidden=false;shade.hidden=false;document.body.classList.add('menu-open');toggle.setAttribute('aria-expanded','true');document.getElementById('menuClose').focus()};document.getElementById('menuClose').onclick=closeMenu;document.addEventListener('click',e=>{if(!menu.contains(e.target)&&!toggle.contains(e.target))closeMenu();const b=e.target.closest('[data-save]');if(b){const x=data[Number(b.dataset.save)];if(!x)return;const k=key(x),has=savedKeys.includes(k);savedKeys=has?savedKeys.filter(v=>v!==k):[...savedKeys,k];const ok=write('edu-saved',savedKeys);b.textContent=b.classList.contains('bookmark')?(has?'☆':'★'):(has?'☆ Save subject':'★ Saved');b.setAttribute('aria-label',has?'Save subject':'Remove saved subject');b.setAttribute('aria-pressed',String(!has));toast(ok?(has?'Subject removed':'Subject saved'):'Browser storage unavailable');if(location.hash==='#saved')route()}});menu.addEventListener('click',e=>{if(e.target.closest('a'))closeMenu()});document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMenu()});document.getElementById('share').onclick=async()=>{try{if(navigator.share)await navigator.share({title:'EduLeaf',url:location.origin});else{await navigator.clipboard.writeText(location.origin);toast('Website link copied')}}catch{}};window.addEventListener('scroll',()=>{if(navTrail.length)navTrail[navTrail.length-1].y=window.scrollY},{passive:true});
+document.addEventListener('click', e => {
+  const link = e.target.closest('a[href="#home"]');
+  if (!link) return;
+  if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+
+  restoreY = 0;
+
+  if (!location.hash || location.hash === '#home') {
+    e.preventDefault();
+    closeMenu();
+    window.scrollTo({
+      top:0,
+      behavior:matchMedia('(prefers-reduced-motion: reduce)').matches
+        ? 'auto' : 'smooth'
+    });
+  }
+});
+window.addEventListener('hashchange',()=>{closeMenu();navTrail.push({hash:location.hash||'#home',y:0});route()});route();
 
 let installPrompt;const installButton=document.getElementById('installApp');window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e;installButton.hidden=false});window.addEventListener('appinstalled',()=>{installPrompt=null;installButton.hidden=true});if(matchMedia('(display-mode: standalone)').matches||navigator.standalone)installButton.hidden=true;installButton.onclick=async()=>{closeMenu();if(installPrompt){const p=installPrompt;installPrompt=null;await p.prompt();if((await p.userChoice).outcome==='accepted')installButton.hidden=true}else toast('Use your browser menu: Install app or Add to Home Screen.')};if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));
 const bell=document.getElementById('bell'),panel=document.getElementById('notifications'),nl=document.getElementById('noticeList'),badge=document.getElementById('unread');let notices=[],seen=read('edu-notices-read',[]),lastNotice=0;if(!Array.isArray(seen))seen=[];function drawNotices(){const n=notices.filter(x=>!seen.includes(x.id)).length;badge.hidden=!n;badge.textContent=n>99?'99+':n;nl.replaceChildren();if(!notices.length){nl.textContent='No new announcements.';return}for(const x of notices){const b=document.createElement('button');b.className='noticeitem'+(seen.includes(x.id)?'':' unread');const t=document.createElement('strong'),p=document.createElement('p'),d=document.createElement('small');t.textContent=x.title;p.textContent=x.body;d.textContent=new Date(x.created_at.replace(' ','T')+'Z').toLocaleDateString();b.append(t,p,d);b.onclick=()=>{seen=[...new Set([...seen,x.id])];write('edu-notices-read',seen);drawNotices();if(x.subject){const c=data.find(y=>y.batch===x.batch&&Number(sem(y))===x.semester&&group(y)===x.category&&y.name+' | '+y.code===x.subject);if(c){location.hash=subjectURL(c)+'/'+(x.material_type==='Study Notes'?'notes':'pyq');hideNotices()}else toast('Course catalogue unavailable. Try again.')}};nl.append(b)}}async function loadNotices(){try{const r=await fetch('/api/notifications');if(!r.ok)throw Error();notices=(await r.json()).notifications;lastNotice=Date.now();seen=seen.filter(id=>notices.some(x=>x.id===id));write('edu-notices-read',seen);drawNotices()}catch{nl.textContent='Notifications unavailable. Try again.'}}function hideNotices(){panel.hidden=true;bell.setAttribute('aria-expanded','false')}bell.onclick=()=>{if(!panel.hidden){hideNotices();return}closeMenu();panel.hidden=false;bell.setAttribute('aria-expanded','true');if(Date.now()-lastNotice>60000)loadNotices();else drawNotices()};document.getElementById('closeNotices').onclick=hideNotices;document.getElementById('markRead').onclick=()=>{seen=notices.map(x=>x.id);write('edu-notices-read',seen);drawNotices()};document.addEventListener('keydown',e=>{if(e.key==='Escape')hideNotices()});document.addEventListener('click',e=>{if(!panel.contains(e.target)&&!bell.contains(e.target))hideNotices()});loadNotices();
