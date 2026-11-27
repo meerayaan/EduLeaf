@@ -42,7 +42,49 @@ else if(page==='major'){location.replace('#category/2026/1/Major');return}
 else if(page==='ug')html=crumb('UG Education')+'<h1>UG Education</h1>'+grid(card('University of Kashmir','Undergraduate NEP syllabus resources.',btn('Explore university →','#ku')));
 else if(page==='about')html=crumb('About')+'<h1>About EduLeaf</h1><p class="lead">Independent student resource platform. Catalogue sourced from kashmiruniversitysyllabus.com; syllabus links point to University of Kashmir. Records have not been independently verified.</p><div class="developer"><small>DESIGNED &amp; DEVELOPED BY</small><strong>Ayan Altaf Mir</strong><span>Version 1.0 · In Development</span></div>'+btn('Official KU portal ↗',portal,true);
 else html='<div class="hero"><div class="eyebrow">Learn. Grow. Succeed.</div><h1>Knowledge for every step of your journey.</h1><p>An independent academic library, built to make educational resources easier to find and access.</p><a class="btn" href="#ug">Explore UG resources →</a></div><h2>Explore education</h2>'+grid(card('UG Education','University syllabuses and academic resources.',btn('Explore →','#ug'))+card('School Education','Class-wise resources.','','Coming soon')+card('More resources','Study notes and question papers.','','Coming soon'))+'<h2>Featured collection</h2>'+grid(card('University of Kashmir','Explore undergraduate NEP syllabus resources.',btn('View collection →','#ku')));
-if(!page||page==='home'){const pref=read('edu-pref',null);html+='<h2>Your academic space</h2>'+grid(card('My Semester','Quick access to your semester.',btn('Open →',pref?'#semester/'+pref.batch+'/'+pref.semester:'#my'))+card('Saved subjects','Keep your courses handy.',btn('Open →','#saved'))+card('Search syllabus','Find any subject or course code.',btn('Search →','#search')))+'<h2>EduLeaf in numbers</h2><div class="stats">'+[['Syllabus records',ready?data.length:'…'],['Academic batches',3],['Semesters',8],['Unique PDF links',ready?new Set(data.map(x=>x.link)).size:'…']].map(([a,v])=>card(typeof v==='number'?v.toLocaleString('en-IN'):String(v),a)).join('')+'</div>'}if(page==='subject'&&resource!=='syllabus'&&data[Number(id)]&&data[Number(id)].batch===b&&sem(data[Number(id)])===n&&group(data[Number(id)])===c){const x=data[Number(id)];html=crumb(bc+' / <a href="'+cat+'">'+esc(c)+'</a>')+'<h1>'+esc(pretty(x.name))+'</h1><p class="lead">'+esc(x.code)+'</p>'+grid(card(resource==='notes'?'Study Notes':'Previous Year Papers','No materials published yet.',btn('Request material','#request/'+b+'/'+n+'/'+c+'/'+id)+' '+btn('Contribute','#upload/'+b+'/'+n+'/'+c+'/'+id),'Coming soon'))}main.innerHTML=html;document.body.classList.toggle('internal',!!page&&page!=='home');if(page&&page!=='home'){const back=document.createElement('button');back.className='iconbtn backbtn';back.textContent='← Back';back.onclick=()=>{if(navTrail.length>1){navTrail.pop();const prev=navTrail.pop();location.hash=prev.hash;restoreY=prev.y;}else location.hash='#home';};main.prepend(back);}if(page==='upload')setupUpload(id);
+if(!page||page==='home'){const pref=read('edu-pref',null);html+='<h2>Your academic space</h2>'+grid(card('My Semester','Quick access to your semester.',btn('Open →',pref?'#semester/'+pref.batch+'/'+pref.semester:'#my'))+card('Saved subjects','Keep your courses handy.',btn('Open →','#saved'))+card('Search syllabus','Find any subject or course code.',btn('Search →','#search')))+'<h2>EduLeaf in numbers</h2><div class="stats">'+[['Syllabus records',ready?data.length:'…'],['Academic batches',3],['Semesters',8],['Unique PDF links',ready?new Set(data.map(x=>x.link)).size:'…']].map(([a,v])=>card(typeof v==='number'?v.toLocaleString('en-IN'):String(v),a)).join('')+'</div>'}if(page==='subject'&&resource!=='syllabus'&&data[Number(id)]&&data[Number(id)].batch===b&&sem(data[Number(id)])===n&&group(data[Number(id)])===c){const x=data[Number(id)];html=crumb(bc+' / <a href="'+cat+'">'+esc(c)+'</a>')+'<h1>'+esc(pretty(x.name))+'</h1><p class="lead">'+esc(x.code)+'</p>'+grid(card(resource==='notes'?'Study Notes':'Previous Year Papers','Approved study materials.','<div id="publishedMaterials" role="status">Loading materials…</div>'+btn('Request material','#request/'+b+'/'+n+'/'+c+'/'+id)+' '+btn('Contribute','#upload/'+b+'/'+n+'/'+c+'/'+id)))}main.innerHTML=html;document.body.classList.toggle('internal',!!page&&page!=='home');if(page&&page!=='home'){const back=document.createElement('button');back.className='iconbtn backbtn';back.textContent='← Back';back.onclick=()=>{if(navTrail.length>1){navTrail.pop();const prev=navTrail.pop();location.hash=prev.hash;restoreY=prev.y;}else location.hash='#home';};main.prepend(back);}if(page==='upload')setupUpload(id);
+if(page==='subject' && resource!=='syllabus'){
+ const el=document.getElementById('publishedMaterials');
+ const x=data[Number(id)];
+ if(el && x){
+ (async()=>{
+ try{
+ const params=new URLSearchParams({
+ batch:b,semester:n,category:c,
+ subject:x.name+' | '+x.code,
+ type:resource==='notes'?'Study Notes':'Previous Year Question Papers'
+ });
+ const r=await fetch('/api/materials?'+params);
+ const result=await r.json();
+ if(!r.ok || !result.ok || !Array.isArray(result.materials))throw Error();
+ if(token!==generation)return;
+ el.replaceChildren();
+ if(!result.materials.length){
+ el.textContent='No materials published yet.';
+ return;
+ }
+ for(const m of result.materials){
+ if(!Number.isSafeInteger(m.id)||m.id<1)continue;
+ const item=document.createElement('div');
+ item.className='card';
+ const title=document.createElement('h3');
+ title.textContent=m.file_name;
+ const info=document.createElement('p');
+ info.textContent='Approved material · '+(m.file_size/1024).toFixed(1)+' KB';
+ const link=document.createElement('a');
+ link.className='btn';
+ link.href='/api/materials?action=download&id='+m.id;
+ link.textContent='Download file';
+ item.append(title,info,link);
+ el.append(item);
+ }
+ }catch{
+ if(token===generation)el.textContent='Unable to load materials. Please refresh to retry.';
+ }
+ })();
+ }
+}
+
 if(page==='subject'&&data[Number(id)]&&document.getElementById('pdf')){const x=data[Number(id)];recent=[key(x),...recent.filter(k=>k!==key(x))].slice(0,30);write('edu-recent',recent);main.insertAdjacentHTML('beforeend','<div class="actions"><button class="iconbtn" data-save="'+Number(id)+'" aria-pressed="'+savedKeys.includes(key(x))+'">'+(savedKeys.includes(key(x))?'★ Saved':'☆ Save subject')+'</button>'+btn('Request study material','#request/'+b+'/'+n+'/'+c+'/'+id)+btn('Support by uploading','#upload/'+b+'/'+n+'/'+c+'/'+id)+'</div>')}
 if(page==='request')document.getElementById('community').onsubmit=e=>{e.preventDefault();const fields=[...new FormData(e.target)].map(([k,v])=>k+': '+v).join('\n');location.href=mail(page==='upload'?'EduLeaf contribution':'EduLeaf material request',fields+(page==='upload'?'\nPlease attach your file before sending.':''))};
 if(page==='my')document.getElementById('prefs').onsubmit=e=>{e.preventDefault();const v=Object.fromEntries(new FormData(e.target));write('edu-pref',v);location.hash='semester/'+v.batch+'/'+v.semester};
