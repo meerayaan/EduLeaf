@@ -31,6 +31,11 @@ export async function onRequestPost({ request, env }) {
   let key;
 
   try {
+    const setting = await env.DB.prepare("SELECT value FROM admin_settings WHERE key = 'public_uploads'").first();
+    if (setting?.value !== "true") {
+      return reply({ error: "Uploads are temporarily disabled." }, 503);
+    }
+
     
     if (!request.body) {
       return reply({ error: "Empty request." }, 400);
@@ -262,6 +267,10 @@ export async function onRequestPost({ request, env }) {
 
     key = "pending/" + crypto.randomUUID() + "." + ext;
 
+    const currentSetting = await env.DB.prepare("SELECT value FROM admin_settings WHERE key = 'public_uploads'").first();
+    if (currentSetting?.value !== "true") {
+      return reply({ error: "Uploads are temporarily disabled." }, 503);
+    }
     await env.FILES.put(key, bytes);
 
     const result = await env.DB.prepare(`
