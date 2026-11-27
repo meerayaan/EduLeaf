@@ -1,107 +1,28 @@
-export async function onRequest({ request, env }) {
-  const reply = (body, status = 200) =>
-    Response.json(body, {
-      status,
-      headers: {
-        "Cache-Control": "no-store",
-        "X-Content-Type-Options": "nosniff"
-      }
-    });
-
-  if (!env.DB || !env.FILES || !env.ADMIN_SECRET) {
-    return reply({ error: "Admin unavailable." }, 503);
-  }
-
-  const token = request.headers.get("Authorization");
-
-  if (token !== `Bearer ${env.ADMIN_SECRET}`) {
-    return reply({ error: "Unauthorized." }, 401);
-  }
-
-  try {
-    const url = new URL(request.url);
-    const action = url.searchParams.get("action") || "list";
-
-    if (action === "list" && request.method === "GET") {
-      const { results } = await env.DB.prepare(
-        "SELECT * FROM submissions ORDER BY id DESC LIMIT 100"
-      ).all();
-
-      return reply({
-        ok: true,
-        submissions: results
-      });
-    }
-
-    if (action === "download" && request.method === "GET") {
-      const id = Number(url.searchParams.get("id"));
-
-      if (!Number.isSafeInteger(id) || id < 1) {
-        return reply({ error: "Invalid ID." }, 400);
-      }
-
-      const row = await env.DB.prepare(
-        "SELECT file_key FROM submissions WHERE id = ?"
-      ).bind(id).first();
-
-      if (!row || !row.file_key) {
-        return reply({ error: "File not found." }, 404);
-      }
-
-      const file = await env.FILES.get(
-        row.file_key, "arrayBuffer"
-      );
-
-      if (!file) {
-        return reply({ error: "File not found." }, 404);
-      }
-
-      return new Response(file, {
-        headers: {
-          "Content-Type": "application/octet-stream",
-          "Content-Disposition": "attachment",
-          "Cache-Control": "no-store",
-          "X-Content-Type-Options": "nosniff"
-        }
-      });
-    }
-
-    if (action === "approve" || action === "reject") {
-      if (request.method !== "POST") {
-        return reply({ error: "Method not allowed." }, 405);
-      }
-
-      const id = Number(url.searchParams.get("id"));
-
-      if (!Number.isSafeInteger(id) || id < 1) {
-        return reply({ error: "Invalid ID." }, 400);
-      }
-
-      const status = action === "approve"
-        ? "approved"
-        : "rejected";
-
-      const result = await env.DB.prepare(
-        "UPDATE submissions SET status = ? WHERE id = ? AND status = 'pending'"
-      ).bind(status, id).run();
-
-      if (result.meta.changes !== 1) {
-        return reply({
-          error: "Submission not found or already reviewed."
-        }, 409);
-      }
-
-      return reply({
-        ok: true,
-        id,
-        status,
-        message: `Submission ${status}.`
-      });
-    }
-
-    return reply({ error: "Invalid action or method." }, 400);
-
-  } catch {
-    return reply({ error: "Admin request failed." }, 500);
-  }
+export async function onRequest({request:r,env:e}) {
+ const reply=(body,status=200)=>Response.json(body,{status,headers:{'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
+ const fail=(message,status=400)=>{throw Object.assign(new Error(message),{status})};
+ if(!e.DB||!e.FILES||!e.ADMIN_SECRET)return reply({error:'Admin unavailable'},503);
+ if(r.headers.get('Authorization')!==`Bearer ${e.ADMIN_SECRET}`)return reply({error:'Unauthorized'},401);
+ const u=new URL(r.url), a=u.searchParams.get('action')||'list', id=Number(u.searchParams.get('id'));
+ const q=(sql,...args)=>e.DB.prepare(sql).bind(...args);
+ const log=(action,id,details='')=>q('INSERT INTO admin_activity(action,submission_id,details) VALUES(?,?,?)',action,id,details);
+ const max=10485760;
+ async function form(){let n=0, chunks=[];if(!r.body)fail('Missing body');const reader=r.body.getReader();while(true){const {done,value}=await reader.read();if(done)break;n+=value.byteLength;if(n>max+65536){await reader.cancel();fail('Request too large',413)}chunks.push(value)}return new Response(new Blob(chunks),{headers:{'Content-Type':r.headers.get('Content-Type')||''}}).formData()}
+ async function metadata(f){const get=(k,n=200)=>String(f.get(k)||'').trim().slice(0,n);const b=get('batch'),s=Number(get('semester')),c=get('category'),sub=get('subject'),t=get('type');if(!['2024','2025','2026'].includes(b)||!Number.isInteger(s)||s<1||s>8||!['Study Notes','Previous Year Question Papers','Solved Papers','Important Questions','Other'].includes(t))fail('Invalid details');const res=await fetch(new URL('/courses.json',u));if(!res.ok)fail('Catalogue unavailable',503);const courses=await res.json(),groups={MAJOR:'Major',MINOR:'Minor',MULTIDISCIPLINARY:'MDC',ABILITY:'AEC',SKILL:'SEC',VALUE:'VAC'};if(!courses.some(x=>x.batch===b&&Number(x.semester.startsWith('Ist')?'1':x.semester.match(/^\d+/)?.[0])===s&&(groups[x.category.split(' ')[0]]||'Other')===c&&x.name+' | '+x.code===sub))fail('Invalid course selection');return [b,s,c,sub,t,get('details',1000),get('contributor',100)]}
+ async function file(f){const x=f.get('file');if(!(x instanceof File)||!x.size||x.size>max)fail('Choose a file up to 10 MB');const ext=x.name.split('.').pop().toLowerCase(),sig={pdf:[37,80,68,70,45],jpg:[255,216,255],jpeg:[255,216,255],png:[137,80,78,71,13,10,26,10],docx:[80,75,3,4]}[ext];const bytes=await x.arrayBuffer(),v=new Uint8Array(bytes);if(!Array.isArray(sig)||!sig.every((b,i)=>v[i]===b))fail('Invalid file format');return {key:'pending/'+crypto.randomUUID()+'.'+ext,name:x.name.replace(/[\\/\x00-\x1f]/g,'_').slice(0,200),size:x.size,bytes}}
+ try{
+ if(r.method==='GET'&&a==='list'){const page=Math.max(1,Math.min(100000,Number(u.searchParams.get('page'))||1));const search=(u.searchParams.get('search')||'').slice(0,200),status=u.searchParams.get('status')||'';const where="WHERE (?='' OR instr(lower(subject||' '||file_name||' '||batch||' '||coalesce(contributor,'')||' '||category||' '||semester||' '||material_type),lower(?))>0) AND (?='' OR CASE WHEN deleting=1 THEN 'deleting' WHEN unpublished=1 THEN 'unpublished' ELSE status END=?)";const args=[search,search,status,status];const [rows,count,stats]=await Promise.all([q('SELECT * FROM submissions '+where+' ORDER BY id DESC LIMIT 25 OFFSET ?',...args,(page-1)*25).all(),q('SELECT count(*) n FROM submissions '+where,...args).first(),q("SELECT count(*) total,coalesce(sum(file_size),0) bytes, count(CASE WHEN status='pending' AND unpublished=0 AND deleting=0 THEN 1 END) pending,count(CASE WHEN status='approved' THEN 1 END) approved,count(CASE WHEN unpublished=1 AND deleting=0 THEN 1 END) unpublished FROM submissions").first()]);return reply({ok:true,submissions:rows.results,count:count.n,stats})}
+ if(r.method==='GET'&&a==='activity')return reply({ok:true,activity:(await q('SELECT * FROM admin_activity ORDER BY id DESC LIMIT 100').all()).results});
+ if(r.method==='POST'&&r.headers.get('Origin')!==u.origin)fail('Invalid origin',403);
+ if(a==='upload'&&r.method==='POST'){const f=await form(),m=await metadata(f),x=await file(f);if(f.get('permission')!=='on')fail('Confirm permission');await e.FILES.put(x.key,x.bytes);let result;try{result=await q("INSERT INTO submissions(batch,semester,category,subject,material_type,description,contributor,file_name,file_key,file_size,status) VALUES(?,?,?,?,?,?,?,?,?,?,'pending')",...m,x.name,x.key,x.size).run()}catch(err){await e.FILES.delete(x.key).catch(()=>{});throw err}await log(a,result.meta.last_row_id).run().catch(()=>{});return reply({ok:true,id:result.meta.last_row_id},201)}
+ if(!Number.isSafeInteger(id)||id<1)fail('Invalid ID');const row=await q('SELECT * FROM submissions WHERE id=?',id).first();if(!row)fail('Not found',404);
+ if(a==='download'&&r.method==='GET'){if(row.deleting||!row.file_key)fail('Unavailable',404);const bytes=await e.FILES.get(row.file_key,'arrayBuffer');if(!bytes)fail('File missing',404);return new Response(bytes,{headers:{'Content-Type':'application/octet-stream','Content-Disposition':'attachment','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}})}
+ if(r.method!=='POST')fail('Method not allowed',405);
+ if(a==='delete'){const lock=await q("UPDATE submissions SET deleting=1,status='rejected',unpublished=0 WHERE id=? AND file_key IS ?",id,row.file_key).run();if(!lock.meta.changes)fail('File changed; refresh',409);if(row.file_key)await e.FILES.delete(row.file_key);await e.DB.batch([q('DELETE FROM submissions WHERE id=? AND deleting=1',id),log(a,id,row.file_name)]);return reply({ok:true})}
+ if(row.deleting)fail('Deletion pending; retry delete',409);
+ if(a==='edit'){const f=await form(),m=await metadata(f);const name=String(f.get('file_name')||'').trim();if(!name||name.length>200||/[\\/\x00-\x1f]/.test(name)||name.split('.').pop().toLowerCase()!==row.file_name.split('.').pop().toLowerCase())fail('Invalid filename or extension changed');const result=await q('UPDATE submissions SET batch=?,semester=?,category=?,subject=?,material_type=?,description=?,contributor=?,file_name=? WHERE id=? AND deleting=0 AND file_key IS ?',...m,name,id,row.file_key).run();if(!result.meta.changes)fail('Conflict',409)}
+ else if(a==='replace'){const f=await form(),x=await file(f);await e.FILES.put(x.key,x.bytes);let result;try{result=await q("UPDATE submissions SET file_key=?,file_name=?,file_size=?,status='pending',unpublished=0 WHERE id=? AND deleting=0 AND file_key IS ?",x.key,x.name,x.size,id,row.file_key).run()}catch(err){await e.FILES.delete(x.key).catch(()=>{});throw err}if(!result.meta.changes){await e.FILES.delete(x.key);fail('Conflict',409)}if(row.file_key)try{await e.FILES.delete(row.file_key)}catch{await log('cleanup_required',id,row.file_key).run().catch(()=>{});return reply({ok:true,warning:'Replacement saved; old storage cleanup required'})}}
+ else {const transitions={approve:['pending',0,'approved',0],reject:['pending',0,'rejected',0],unpublish:['approved',0,'pending',1],republish:['pending',1,'approved',0],restore:['rejected',0,'pending',0]};const t=transitions[a];if(!t)fail('Invalid action');const result=await q('UPDATE submissions SET status=?,unpublished=? WHERE id=? AND deleting=0 AND status=? AND unpublished=?',t[2],t[3],id,t[0],t[1]).run();if(!result.meta.changes)fail('Status changed; refresh',409)}
+ await log(a,id).run().catch(()=>{});return reply({ok:true});
+ }catch(err){return reply({error:err.status?err.message:'Admin request failed; refresh before retrying'},err.status||500)}
 }
