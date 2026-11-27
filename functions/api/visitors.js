@@ -13,9 +13,10 @@ export async function onRequest({ request, env }) {
 
   try {
     if (request.method === "POST") {
-      const origin = request.headers.get("Origin");
-
-      if (origin !== new URL(request.url).origin) {
+      if (
+        request.headers.get("Origin") !==
+        new URL(request.url).origin
+      ) {
         return reply({ error: "Forbidden" }, 403);
       }
 
@@ -23,7 +24,11 @@ export async function onRequest({ request, env }) {
         request.headers.get("Content-Length")
       );
 
-      if (!length || length > 512) {
+      if (
+        !Number.isSafeInteger(length) ||
+        length < 1 ||
+        length > 512
+      ) {
         return reply({ error: "Invalid request size" }, 400);
       }
 
@@ -44,9 +49,65 @@ export async function onRequest({ request, env }) {
         return reply({ error: "Invalid visitor ID" }, 400);
       }
 
-      await env.DB.prepare(
-        "INSERT OR IGNORE INTO site_visitors (visitor_id) VALUES (?)"
-      ).bind(id.toLowerCase()).run();
+      const visitorId = id.toLowerCase();
+
+      const existing = await env.DB.prepare(
+        "SELECT visitor_id FROM site_visitors WHERE visitor_id = ?"
+      ).bind(visitorId).first();
+
+      if (!existing) {
+        const ip = request.headers.get("CF-Connecting-IP");
+
+        if (!ip || !env.ADMIN_SECRET) {
+          return reply({ error: "Service unavailable" }, 503);
+        }
+
+        const encoder = new TextEncoder();
+
+        const key = await crypto.subtle.importKey(
+          "raw",
+          encoder.encode(env.ADMIN_SECRET),
+          { name: "HMAC", hash: "SHA-256" },
+          false,
+          ["sign"]
+        );
+
+        const digest = await crypto.subtle.sign(
+          "HMAC",
+          key,
+          encoder.encode("visitor-rate:" + ip)
+        );
+
+        const hash = Array.from(new Uint8Array(digest))
+          .map(b => b.toString(16).padStart(2, "0"))
+          .join("");
+
+        const hour = Math.floor(Date.now() / 3600000);
+
+        const limit = await env.DB.prepare(`
+          INSERT INTO visitor_rate_limits
+          (client_hash, window_start, attempts)
+          VALUES (?, ?, 1)
+          ON CONFLICT(client_hash, window_start)
+          DO UPDATE SET attempts = attempts + 1
+          WHERE attempts < 5
+          RETURNING attempts
+        `).bind(hash, hour).first();
+
+        if (!limit) {
+          return reply({ error: "Rate limit exceeded" }, 429);
+        }
+
+        await env.DB.prepare(
+          "INSERT OR IGNORE INTO site_visitors (visitor_id) VALUES (?)"
+        ).bind(visitorId).run();
+
+        if (limit.attempts === 1) {
+          await env.DB.prepare(
+            "DELETE FROM visitor_rate_limits WHERE window_start < ?"
+          ).bind(hour - 48).run();
+        }
+      }
 
     } else if (request.method !== "GET") {
       return reply({ error: "Method not allowed" }, 405);
