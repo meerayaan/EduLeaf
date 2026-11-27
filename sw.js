@@ -1,4 +1,4 @@
-const CACHE='eduleaf-public-v1';const assets=['/','/courses.json','/icon-192.png','/icon-512.png','/manifest.webmanifest'];
+const CACHE='eduleaf-public-v2';const assets=['/','/courses.json','/icon-192.png','/icon-512.png','/manifest.webmanifest'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(assets))));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('eduleaf-public-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',e=>{const u=new URL(e.request.url);if(e.request.method!=='GET'||u.origin!==self.location.origin||u.search||!['/','/index.html','/courses.json','/icon-192.png','/icon-512.png','/manifest.webmanifest'].includes(u.pathname))return;e.respondWith((async()=>{const c=await caches.open(CACHE);try{const r=await fetch(e.request);if(r.ok&&!r.redirected)await c.put(e.request,r.clone());return r}catch{return await c.match(e.request)|| (u.pathname==='/index.html'?await c.match('/'):undefined)||new Response('Offline',{status:503})}})())});
