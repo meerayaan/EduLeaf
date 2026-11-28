@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#111113">
+<title>Sign in | EduLeaf Administration</title>
+<link rel="icon" href="/icon.svg">
+<link rel="stylesheet" href="/assets/admin/login.css">
+<script src="/assets/admin/login.js" defer></script>
+</head>
+<body>
+<main class="login">
+  <div class="brand">
+    <img src="/icon.svg" alt="" width="58" height="58">
+    <h1>EduLeaf</h1>
+    <span>ADMINISTRATION</span>
+  </div>
+
+  <section class="panel">
+    <div class="eyebrow">SECURE WORKSPACE</div>
+    <h2>Welcome back.</h2>
+    <p>Sign in to your administration portal.</p>
+
+    <form id="loginForm">
+      <input type="hidden" name="username"
+        value="admin" autocomplete="username">
+
+      <label for="password">Admin password</label>
+      <div class="password-field">
+        <input id="password" name="password"
+          type="password" autocomplete="current-password"
+          placeholder="Enter your password"
+          required maxlength="1024">
+        <button type="button" id="togglePassword"
+          class="visibility" aria-label="Show password"
+          aria-pressed="false">
+          <svg viewBox="0 0 24 24" width="20" height="20"
+            fill="none" stroke="currentColor"
+            stroke-width="1.6" stroke-linecap="round"
+            stroke-linejoin="round">
+            <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/>
+            <circle cx="12" cy="12" r="3"/>
+            <path id="eyeSlash" d="M3 3l18 18" hidden/>
+          </svg>
+        </button>
+      </div>
+
+      <label class="remember">
+        <input type="checkbox" id="remember">
+        Keep me signed in
+      </label>
+
+      <div id="message" role="status" aria-live="polite"></div>
+
+      <button type="submit" id="signIn" class="primary">
+        <span id="spinner" class="spinner" hidden></span>
+        <span id="buttonText">Sign in</span>
+        <span aria-hidden="true">&rarr;</span>
+      </button>
+    </form>
+
+    <div class="security">
+      <svg viewBox="0 0 24 24" width="17" height="17"
+        fill="none" stroke="currentColor" stroke-width="1.6">
+        <path d="M12 2l8 4v6c0 5-8 10-8 10S4 17 4 12V6Z"/>
+        <path d="m8 12 3 3 5-6"/>
+      </svg>
+      Authorized administrators only
+    </div>
+  </section>
+
+  <footer>
+    <a href="/">Return to EduLeaf</a>
+    <span>Administration &middot; Version 3.0</span>
+  </footer>
+</main>
+</body>
+</html>

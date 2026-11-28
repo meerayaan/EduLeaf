@@ -2,7 +2,37 @@ export async function onRequest({request:r,env:e}) {
  const reply=(body,status=200)=>Response.json(body,{status,headers:{'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
  const fail=(message,status=400)=>{throw Object.assign(new Error(message),{status})};
  if(!e.DB||!e.FILES||!e.ADMIN_SECRET)return reply({error:'Admin unavailable'},503);
- if(r.headers.get('Authorization')!==`Bearer ${e.ADMIN_SECRET}`)return reply({error:'Unauthorized'},401);
+ const cookieName = '__Host-eduleaf_admin=';
+ const token = (r.headers.get('Cookie') || '')
+   .split(';').map(x => x.trim())
+   .find(x => x.startsWith(cookieName))
+   ?.slice(cookieName.length) || '';
+
+ if (!/^[a-f0-9]{64}$/.test(token))
+   return reply({error:'Authentication required'},401);
+
+ const digest = await crypto.subtle.digest(
+   'SHA-256', new TextEncoder().encode(token)
+ );
+
+ const tokenHash = Array.from(
+   new Uint8Array(digest),
+   b => b.toString(16).padStart(2,'0')
+ ).join('');
+
+ const now = Math.floor(Date.now()/1000);
+
+ try {
+   const session = await e.DB.prepare(
+     'SELECT token_hash FROM admin_sessions WHERE token_hash=? AND expires_at>?'
+   ).bind(tokenHash,now).first();
+
+   if (!session)
+     return reply({error:'Session expired. Sign in again.'},401);
+ } catch {
+   return reply({error:'Authentication unavailable'},503);
+ }
+
  const u=new URL(r.url), a=u.searchParams.get('action')||'list', id=Number(u.searchParams.get('id'));
  const q=(sql,...args)=>e.DB.prepare(sql).bind(...args);
  const log=(action,id,details='')=>q('INSERT INTO admin_activity(action,submission_id,details) VALUES(?,?,?)',action,id,details);
